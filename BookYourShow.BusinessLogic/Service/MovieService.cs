@@ -15,6 +15,7 @@ namespace BookYourShow.BusinessLogic.Service {
         List<string> ShowAllMovies ();
         Task<ResponseDto> AddMovie (MovieDto model, IFormFileCollection files);
         Task<ResponseDto>  GetMovies(int pageNumber, int pageSize);
+        Task<ResponseDto> GetMoviePagination(int pageNumber, int pageSize);
         Task<ResponseDto> GetMovie(long movieId);
         Task<ResponseDto> EditMovie (MovieDto dto, IFormFileCollection files);
     }
@@ -135,6 +136,41 @@ namespace BookYourShow.BusinessLogic.Service {
                 }
                 return response;
             }
+        }
+
+        
+        public async Task<ResponseDto> GetMoviePagination(int pageNumber, int pageSize)
+        {
+            using (_context){
+                List<MovieDto> moviesDto = new List<MovieDto>();
+                var query = _context.Movie.OrderByDescending(x=>x.LaunchDate);
+                var movies = query.Skip((pageNumber-1)*pageSize)
+                    .Take(pageSize);
+                int totalvalues = query.Count();
+                foreach(var movie in movies){
+                    moviesDto.Add(new MovieDto{
+                        id = movie.id,
+                        MovieName = movie.MovieName,
+                        ThumbnailUrl = movie.ThumbnailUrl,
+                        LaunchDate = movie.LaunchDate,
+                        MovieSummary = movie.MovieSummary
+                    });
+                }
+                var pageResult = new PageResultDto{
+                    Data = moviesDto,
+                    CurrentPage = pageNumber,
+                    TotalPages = (totalvalues-1)/pageSize+1,
+                    TotalItemCount = totalvalues
+                };
+
+                if(moviesDto.Count > 0){
+                    response.Data = pageResult;
+                }else{
+                    response.IsSuccess = true;
+                    response.Message = Constants.ServiceConstant.Messages.Movies.ErrorGetMovie;
+                }  
+            }
+            return response;
         }
 
         public async Task<ResponseDto> GetMovies(int pageNumber, int pageSize)

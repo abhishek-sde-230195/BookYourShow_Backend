@@ -71,6 +71,12 @@ namespace BookYourShow.Api.Controllers {
             return ReturnResponse(response);
         }
 
+        [HttpGet ("GetMoviePagination")]
+        public async Task<IActionResult> GetMoviePagination (int pageNumber, int pageSize) {
+            response =  await _movieService.GetMoviePagination (pageNumber, pageSize);
+            return ReturnResponse(response);
+        }
+
         [HttpGet ("GetMovie/{movieId}")]
         public async Task<IActionResult> GetMovie (long movieId) {
             response =  await _movieService.GetMovie (movieId);
